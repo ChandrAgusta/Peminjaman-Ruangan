@@ -1,180 +1,130 @@
 import React, { useState, useEffect } from "react";
-import { Button, Col, Container, FormSelect, Row } from "react-bootstrap";
+import { Button, Col, Container, Row } from "react-bootstrap";
 import Card from "react-bootstrap/Card";
-import axios from "axios";
-import { API_URL } from "../utils/constants";
 import NavbarComp from "../Component/Navbar";
-import {
-  postPeminjamanData,
-  getFasilitasData,
-  getJamData,
-} from "../utils/constants"; // Impor fungsi getRuanganData
-import { useParams } from "react-router-dom"; // Gunakan useParams untuk mendapatkan ID ruangan
+import * as api from "../utils/constants";
 import Swal from "sweetalert2";
 
 const FormPinjam = () => {
-  const { id } = useParams(); // Dapatkan ID ruangan dari URL
-  const [ruanganData, setRuanganData] = useState({});
-  const [fasilitasData, setFasilitasData] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
-  const [jamData, setJamData] = useState([]);
-  const [jamMulai, setJamMulai] = useState("");
-  const [jamSelesai, setJamSelesai] = useState("");
-
-  const [selectedFasilitas, setSelectedFasilitas] = useState([]); // State untuk menyimpan fasilitas yang dipilih
+  const [ruanganTersedia, setRuanganTersedia] = useState([]);
+  const [checkedJams, setCheckedJams] = useState({});
+  const [jamMulai, setJamMulai] = useState({});
+  const [jamSelesai, setJamSelesai] = useState({});
 
   const handleDateChange = (event) => {
     setSelectedDate(event.target.value);
   };
 
-  const handleCheckboxChange = (e) => {
-    const { value, checked } = e.target;
-
-    // Menambah atau menghapus fasilitas yang dipilih dari state
-    if (checked) {
-      setSelectedFasilitas([...selectedFasilitas, value]);
-    } else {
-      setSelectedFasilitas(
-        selectedFasilitas.filter((fasilitas) => fasilitas !== value)
-      );
-    }
-  };
-
-  const handleJamSelesaiChange = (event) => {
-    setJamSelesai(event.target.value);
-  };
-
-  const handleJamMulaiChange = (event) => {
-    setJamMulai(event.target.value);
-  };
-
   const handlePinjam = async () => {
-    if (
-      selectedDate &&
-      jamMulai &&
-      jamSelesai.length > 0
-      // selectedFasilitas.length > 0
-    ) {
-      const peminjamanData = {
-        idPeminjam: 1,
-        ruanganId: id,
-        tanggal: selectedDate,
-        jam_peminjaman: jamMulai,
-        jam_selesai_peminjaman: jamSelesai,
-        barang: fasilitasData,
-      };
-      console.log("Data yang akan dikirim:", peminjamanData);
+    if (selectedDate) {
       try {
-        await postPeminjamanData(id, peminjamanData);
-        Swal.fire({
-          icon: "success",
-          title: "Peminjaman Berhasil",
-          text: "Pengajuan Peminjaman Ruangan Berhasil, Tunggu Konfirmasi Sekretariat",
-          showConfirmButton: false,
-          timer: 1500,
-        });
+        const ruanganData = await api.searchRuangan(selectedDate);
+        setRuanganTersedia(ruanganData);
       } catch (error) {
-        Swal.fire({
-          icon: "error",
-          title: "Peminjaman Gagal",
-          text: "Terjadi Kesalahan Saat Memproses Peminjaman Ruangan",
-          showConfirmButton: false,
-          timer: 1500,
-        });
+        console.error("Error searching ruangan:", error);
       }
     } else {
-      console.error()
-      Swal.fire({
-        icon: "error",
-        title: "Data Belum Lengkap",
-        text: "Pastikan semua input terisi sebelum melakukan pengajuan.",
-        showConfirmButton: false,
-        timer: 2000,
-      });
+      console.error("Please select a date");
     }
   };
 
-
   useEffect(() => {
-    // Ambil data ruangan berdasarkan ID (misalnya, untuk menampilkan nama ruangan)
-    axios
-      .get(`${API_URL}/ruangan/${id}`)
-      .then((res) => {
-        setRuanganData(res.data.data);
-      })
-      .catch((error) => {
-        console.log(error);
+    const fetchData = async () => {
+      try {
+        const ruanganData = await api.searchRuangan(selectedDate);
+        setRuanganTersedia(ruanganData);
+      } catch (error) {
+        console.error("Error searching ruangan:", error);
+      }
+    };
+
+    if (selectedDate) {
+      fetchData();
+    } else {
+      console.error("Please select a date");
+    }
+  }, [selectedDate]);
+
+  const handleCheckboxChange = (ruanganId, jam) => {
+    if (!checkedJams[ruanganId]?.[jam]) {
+      setJamMulai({
+        ...jamMulai,
+        [ruanganId]: {
+          ...jamMulai[ruanganId],
+          [jam]: jam,
+        },
       });
-
-    // Panggil fungsi getFasilitasData untuk mengambil fasilitas berdasarkan ID ruangan
-    getFasilitasData(id)
-      .then((barang) => {
-        setFasilitasData(barang);
-      })
-      .catch((error) => {
-        console.error("Error fetching facility data:", error);
+    } else {
+      setJamSelesai({
+        ...jamSelesai,
+        [ruanganId]: {
+          ...jamSelesai[ruanganId],
+          [jam]: jam,
+        },
       });
-  }, [id]);
+    }
 
-  useEffect(() => {
-    // Ambil data ruangan berdasarkan ID (misalnya, untuk menampilkan nama ruangan)
-    axios
-      .get(`${API_URL}/ruangan/${id}`)
-      .then((res) => {
-        setRuanganData(res.data.data);
-      })
-      .catch((error) => {
-        console.log(error);
+    setCheckedJams({
+      ...checkedJams,
+      [ruanganId]: {
+        ...checkedJams[ruanganId],
+        [jam]: !checkedJams[ruanganId]?.[jam],
+      },
+    });
+  };
+
+  const handlePeminjaman = async () => {
+    const idRuanganTerpilih = []; // Array untuk menyimpan ID ruangan yang terpilih
+    const jamMulaiArr = []; // Array untuk menyimpan jam mulai
+    const jamSelesaiArr = []; // Array untuk menyimpan jam selesai
+
+    if (Object.keys(checkedJams).length > 0) {
+      Object.keys(checkedJams).forEach((ruanganId) => {
+        Object.keys(checkedJams[ruanganId]).forEach((jam) => {
+          if (checkedJams[ruanganId]?.[jam]) {
+            idRuanganTerpilih.push(ruanganId);
+            jamMulaiArr.push(jamMulai[ruanganId]?.[jam]);
+            jamSelesaiArr.push(jamSelesai[ruanganId]?.[jam]);
+          }
+        });
       });
+    }
 
-    // Panggil fungsi getFasilitasData untuk mengambil fasilitas berdasarkan ID ruangan
-    getJamData(id)
-      .then((jam) => {
-        setJamData(jam);
-        console.log('Jam:',jam)
-      })
-      .catch((error) => {
-        console.error("Error fetching facility data:", error);
+    console.log("ID Ruangan yang terkirim:", idRuanganTerpilih); // Log ID ruangan yang terkirim
+    console.log("Jam Mulai:", jamMulaiArr[0]); // Log jam mulai
+    console.log("Jam Selesai:", jamMulaiArr[jamMulaiArr.length - 1]); // Log jam selesai
+
+    const peminjamanData = {
+      id_peminjam: "3",
+      tanggal: selectedDate,
+      idRuangan: idRuanganTerpilih[0],
+      jam_peminjaman: jamMulaiArr[0],
+      jam_selesai_peminjaman: jamMulaiArr[jamMulaiArr.length - 1],
+      ...checkedJams,
+    };
+
+    try {
+      // Kirim data peminjaman ke backend
+
+      await api.postPeminjamanData(idRuanganTerpilih[0], peminjamanData);
+      Swal.fire({
+        title: "Berhasil Mengajukan Peminjaman",
+        icon: "success",
+        timer: 1000,
+        showConfirmButton: false,
       });
-  }, [id]);
-
-  useEffect(() => {
-    // Ambil data ruangan berdasarkan ID (misalnya, untuk menampilkan nama ruangan)
-    axios
-      .get(`${API_URL}/ruangan/${id}`)
-      .then((res) => {
-        setRuanganData(res.data.data);
-      })
-      .catch((error) => {
-        console.log(error);
+      // Proses berhasil, mungkin Anda ingin melakukan sesuatu di sini
+    } catch (error) {
+      Swal.fire({
+        title: "Gagal Mengajukan Peminjaman",
+        icon: "error",
+        timer: 1000,
+        showConfirmButton: false,
       });
-
-    // Panggil fungsi getFasilitasData untuk mengambil fasilitas berdasarkan ID ruangan
-    getFasilitasData(id)
-      .then((barang) => {
-        setFasilitasData(barang);
-        console.log('Barang:',barang)
-      })
-      .catch((error) => {
-        console.error("Error fetching facility data:", error);
-      });
-  }, [id]);
-
-
-  // useEffect(() => {
-  //   // Panggil fungsi getFasilitasData saat komponen dimuat
-  //   async function fetchFasilitasData() {
-  //     if (ruanganData) {
-  //       try {
-  //         const data = await getFasilitasData(ruanganData.id); // Mengambil fasilitas berdasarkan ruangan yang dipilih
-  //         setFasilitasData(data);
-  //       } catch (error) {
-  //         console.error("Error fetching data: ", error);
-  //       }
-  //     }
-  //   }
-  //   fetchFasilitasData();
-  // }, [ruanganData]);
+      console.error("Error creating peminjaman:", error);
+    }
+  };
 
   return (
     <div>
@@ -191,120 +141,97 @@ const FormPinjam = () => {
             <Col className="p-3">
               <Row className="mb-4">
                 <Col>
-                  <label>Ruangan</label>
+                <label>Nama </label>
                 </Col>
                 <Col>
-                  <input
-                    type="text"
-                    value={
-                      ruanganData
-                        ? ruanganData.id
-                        : "Nama Ruangan Tidak Tersedia"
-                    }
-                    disabled
-                  />
-                </Col>
-              </Row>
-              {/* <Row className="mb-4">
-                <Col>
-                  <label>Nama Ruangan</label>
-                </Col>
-                <Col>
-                  <input
-                    type="text"
-                    value={
-                      ruanganData.nama_ruangan
-                    }
-                    disabled
-                  />
-                </Col>
-              </Row> */}
-              <Row className="mb-4">
-                <Col>
-                  <label>NIM</label>
-                </Col>
-
-                <Col>
-                  <input type="text" value="1" disabled />
+                <input type ="text">
+                </input>
                 </Col>
               </Row>
               <Row className="mb-4">
                 <Col>
-                  <label>Nama Peminjam</label>
+                <label>NIM </label>
                 </Col>
-
                 <Col>
-                  <input type="text" value="" disabled/>
+                <input type ="text">
+                </input>
                 </Col>
               </Row>
-
               <Row className="mb-4">
-                <Col sm={6}>
+                <Col>
                   <label>Tanggal Peminjaman</label>
                 </Col>
-
-                <Col sm={6}>
+                <Col>
                   <input
                     type="date"
                     value={selectedDate}
                     onChange={handleDateChange}
-                    required
                   />
                 </Col>
               </Row>
-
-              <Row className="mb-4">
-                <Col sm={6}>
-                  <label>Waktu Peminjaman</label>
-                </Col>
-
-                <Col sm={3}>
-                  <FormSelect onChange={handleJamMulaiChange} required>
-                    <option>Jam Mulai</option>
-                    {jamData.map((jam) => (
-                      <option key={jam.id} value={jam.jam}>
-                        {jam.jam}
-                      </option>
-                    ))}
-                  </FormSelect>
-                </Col>
-
-                <Col sm={3}>
-                  <FormSelect onChange={handleJamSelesaiChange} required>
-                    <option>Jam Selesai</option>
-                    {jamData.map((jam) => (
-                      <option key={jam.id} value={jam.jam}>
-                        {jam.jam}
-                      </option>
-                    ))}
-                  </FormSelect>
-                </Col>
-              </Row>
-
-              {/* <Row>
-                <Col>
-                  <label>Fasilitas</label>
-                </Col>
-                <Col>
-                  {fasilitasData.map((barang) => (
-                    <div key={barang.id}>
-                      <input
-                        type="checkbox"
-                        id={barang.id}
-                        name="fasilitas"
-                        value={barang.nama_barang}
-                        checked={selectedFasilitas.includes(barang.nama_barang)} // Atur checked berdasarkan seleksi
-                        onChange={handleCheckboxChange} // Gunakan onChange untuk menangani perubahan
-                        className="mb-3"
-                      />
-                      <label htmlFor={barang.id}>{barang.nama_barang}</label>
-                    </div>
-                  ))}
-                </Col>
-              </Row> */}
             </Col>
-            <Container className="d-flex justify-content-end mt-3">
-              <Button onClick={handlePinjam}>Pinjam</Button>
+
+            {ruanganTersedia.length > 0 && (
+              <Container className="mt-4">
+                <h4>Ruangan Yang Tersedia pada Tanggal {selectedDate}:</h4>
+                <label style={{ backgroundColor:'green' }}> </label>
+                <table className="table" style={{ border: "2px solid black" }}>
+                  <thead style={{ border: "2px solid black" }}>
+                    <tr>
+                      <th></th>
+                      {ruanganTersedia.map((ruanganData) => (
+                        <th
+                          style={{ border: "2px solid black"}}
+                          key={ruanganData.id}
+                        >
+                          {ruanganData.nama_ruangan}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ruanganTersedia[0].jam.map((jam, index) => (
+                      <tr key={index}>
+                        <td style={{ border: "2px solid black", width: "20%" }}>
+                          {jam.jam} 
+                        </td>
+
+                        {ruanganTersedia.map((ruanganData) => (
+                          <td
+                            style={{
+                              // border: "2px solid black",
+                              backgroundColor:
+                                ruanganData.jam.find(
+                                  (item) => item.jam === jam.jam
+                                ).status_ruangan === "0"
+                                  ? "green"
+                                  : "red",
+                                  borderRadius: '30px',
+                            }}
+                            key={ruanganData.id}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checkedJams[ruanganData.id]?.[jam.jam]}
+                              onChange={() =>
+                                handleCheckboxChange(ruanganData.id, jam.jam)
+                              }
+                              disabled={
+                                ruanganData.jam.find(
+                                  (item) => item.jam === jam.jam
+                                ).status_ruangan !== "0"
+                              } // Checkbox akan dinonaktifkan jika status bukan 0
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </Container>
+            )}
+            <Container className="mt-4 d-flex justify-content-end">
+              <Button onClick={handlePeminjaman}>Pinjam</Button>
             </Container>
           </Card>
         </Container>

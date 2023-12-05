@@ -3,7 +3,9 @@ import React, { createContext, useContext, useState } from 'react';
 const UserRole = createContext();
 
 export function UserRoleProvider({ children }) {
-  const [userRole, setUserRole] = useState('sekretariat');
+  const [userRole, setUserRole] = useState('peminjam');
+  // const [userRole, setUserRole] = useState('sekretariat');
+  // const [userRole, setUserRole] = useState('admin');
 
   return (
     <UserRole.Provider value={{ userRole, setUserRole }}>

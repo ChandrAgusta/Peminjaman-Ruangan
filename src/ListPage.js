@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Card } from "react-bootstrap";
 import { Link, useLocation } from "react-router-dom";
+import {
+  Switch,
+  BrowserRouter as Router,
+  Routes,
+  Route,
+} from "react-router-dom";
 import { useUserRole } from "./userRole";
 import * as api from "./utils/constants";
 import Swal from "sweetalert2";
+import FormPinjam from "./Peminjam/FormPinjam";
+import Dashboard from "./dashboard";
+import PeminjamPage from "./Peminjam/PeminjamPage";
 
 function ListPage() {
   const { userRole } = useUserRole();
@@ -22,37 +31,37 @@ function ListPage() {
 
   const handleDelete = (id) => {
     Swal.fire({
-      title: 'Anda yakin?',
-      text: 'Anda tidak akan dapat mengembalikan ini!',
-      icon: 'question',
+      title: "Anda yakin?",
+      text: "Anda tidak akan dapat mengembalikan ini!",
+      icon: "question",
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Ya, hapus!',
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Ya, hapus!",
     }).then((result) => {
       if (result.isConfirmed) {
         api
           .deleteRuanganData(id)
           .then(() => {
             Swal.fire({
-              icon: 'success',
-              title: 'Terhapus!',
-              text: 'Data ruangan telah dihapus.',
-              showConfirmButton:false,
-              timer:1000
+              icon: "success",
+              title: "Terhapus!",
+              text: "Data ruangan telah dihapus.",
+              showConfirmButton: false,
+              timer: 1000,
             });
             // Refresh daftar ruangan setelah penghapusan
             const updatedRuangan = ruangan.filter((ruang) => ruang.id !== id);
             setRuangan(updatedRuangan);
           })
           .catch((error) => {
-            console.error('Gagal menghapus data:', error);
+            console.error("Gagal menghapus data:", error);
             Swal.fire({
-              icon: 'error',
-              title: 'Gagal!',
-              text: 'Terjadi kesalahan saat menghapus data ruangan.',
-              showConfirmButton:false,
-              timer:1000
+              icon: "error",
+              title: "Gagal!",
+              text: "Terjadi kesalahan saat menghapus data ruangan.",
+              showConfirmButton: false,
+              timer: 1000,
             });
           });
       }
@@ -61,8 +70,9 @@ function ListPage() {
 
   return (
     <div className="container">
-      <h2>Daftar Ruangan</h2>
+      {userRole === "sekretariat" && (
       <Card>
+      <h2>Daftar Ruangan</h2>
         <Table responsive className="mt-3">
           <thead>
             <tr>
@@ -81,17 +91,7 @@ function ListPage() {
                 <td>{ruang.kapasitas}</td>
                 <td>{ruang.desc}</td>
                 <td>
-                  {userRole === 'peminjam' && (
-                    <Link
-                      to={{
-                        pathname: `/FormPinjam/${ruang.id}`,
-                        state: { ruangan: ruang },
-                      }}
-                    >
-                      <Button className="tombolPinjam">Pinjam</Button>
-                    </Link>
-                  )}
-                  {userRole === 'sekretariat' && (
+
                     <>
                       <Link
                         to={{
@@ -99,7 +99,9 @@ function ListPage() {
                           state: { ruangan: ruang },
                         }}
                       >
-                        <Button className="tombolEdit mx-2 btn-warning">Edit</Button>
+                        <Button className="tombolEdit mx-2 btn-warning">
+                          Edit
+                        </Button>
                       </Link>
                       <Button
                         className="buttonHapus btn-danger"
@@ -108,18 +110,32 @@ function ListPage() {
                         Hapus
                       </Button>
                     </>
-                  )}
+                  
                 </td>
               </tr>
             ))}
           </tbody>
         </Table>
       </Card>
+
+      )}
+       {userRole === "peminjam" && (
+        <Routes>
+          <Route exact path="/" component={Dashboard} />
+          <Route path="/pinjam-ruangan" component={PeminjamPage} />
+        </Routes>
+      )}
+
     </div>
   );
 }
 
 export default ListPage;
+
+
+//     <Button className="tombolPinjam">Pinjam</Button>
+//   </Link>
+// )}
 
 // import React, { useState, useEffect } from 'react';
 // import { Table, Button, Card } from 'react-bootstrap';

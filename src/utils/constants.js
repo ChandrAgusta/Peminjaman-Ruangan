@@ -1,6 +1,9 @@
 import axios from "axios";
+// import socketIOClient from 'socket.io-client';
 
 export const API_URL = "http://localhost:4000";
+// const socket = socketIOClient(API_URL);
+
 // RUANGAN
 // Fungsi untuk melakukan GET request
 export const getRuanganData = async () => {
@@ -83,6 +86,47 @@ export const deletePenggunaData = async (id) => {
   }
 };
 
+// SEKRETARIAT
+// Fungsi untuk melakukan GET request data sekretariat
+export const getSekretariatData = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/auth/sekretariat`);
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Fungsi untuk melakukan POST request data pengguna
+export const postSekretariatData = async (penggunaData) => {
+  try {
+    const response = await axios.post(`${API_URL}/auth/register/sekretariat`, penggunaData);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Fungsi untuk melakukan PUT request data pengguna
+export const getSekretariatDataId = async (id, penggunaData) => {
+  try {
+    const response = await axios.get(`${API_URL}/auth/sekretariat/${id}`, penggunaData);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Fungsi untuk melakukan DELETE request data pengguna
+export const deleteSekretariatData = async (id) => {
+  try {
+    const response = await axios.delete(`${API_URL}/auth/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // FASILITAS
 // Fungsi untuk melakukan GET request data 
 export const getFasilitasData = async (id_ruangan) => {
@@ -155,16 +199,6 @@ export const putJamData = async (id, jamData) => {
   }
 };
 
-// // Fungsi untuk melakukan DELETE request data peminjaman
-// export const deletePeminjamanData = async (id) => {
-//   try {
-//     const response = await axios.delete(`${API_URL}/peminjaman/${id}`);
-//     return response.data;
-//   } catch (error) {
-//     throw error;
-//   }
-// };
-
 // PEMINJAMAN
 // Fungsi untuk melakukan GET request data peminjaman
 export const getPeminjamanData = async () => {
@@ -206,14 +240,83 @@ export const deletePeminjamanData = async (id) => {
   }
 };
 
-export const getRiwayatPeminjaman = async () => {
+export const searchRuangan = async (tanggal) => {
   try {
-    const response = await axios.get(`${API_URL}/peminjaman?status=-1`);
-    return response.data.data;
+    const response = await axios.get(`${API_URL}/peminjaman/search`, {
+      params: {
+        tanggal: tanggal,
+      },
+    });
+    return response.data.ruanganTersedia;
   } catch (error) {
     throw error;
   }
 };
+
+export const RiwayatPeminjaman = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/peminjaman/riwayat`);
+    return response.data.riwayat;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+// LOGIN
+// Fungsi untuk mendapatkan peran (role) pengguna berdasarkan ID
+// Fungsi untuk melakukan POST request login
+export const login = async (credentials) => {
+  try {
+    const response = await axios.post(`${API_URL}/auth/login`, credentials);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getUserProfile = async () => {
+  try {
+    const token = localStorage.getItem('token'); // Ambil token dari localStorage
+    const response = await axios.get(`${API_URL}/auth/profile`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data.userRole; // Ambil userRole dari profil pengguna
+  } catch (error) {
+    throw error;
+  }
+};
+
+// export const loginUser = async (credentials) => {
+//   try {
+//     // Use your login API endpoint to authenticate
+//     // and get the token
+//     const response = await fetch(`${API_URL}/login`, {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify(credentials),
+//     });
+
+//     const data = await response.json();
+//     return data;
+//   } catch (error) {
+//     throw error;
+//   }
+// };
+
+
+// export const listenToDatabaseChanges = (callback) => {
+//   socket.on('databaseUpdate', (updatedData) => {
+//     callback(updatedData);
+//   });
+// };
+
+
+
 
 
 

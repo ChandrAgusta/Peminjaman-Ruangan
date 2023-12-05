@@ -1,5 +1,4 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import axios from 'axios';
@@ -10,7 +9,7 @@ function Example() {
   const [show, setShow] = useState(false);
   const [formData, setFormData] = useState({
     nama_ruangan: '',
-    kapasitas: '',
+    kapasitas: 0,
     desc: '',
   });
 
@@ -19,7 +18,7 @@ function Example() {
     // Reset the form fields when closing the modal
     setFormData({
       nama_ruangan: '',
-      kapasitas: '',
+      kapasitas: 0,
       desc: '',
     });
   };
@@ -28,40 +27,44 @@ function Example() {
 
   // Function to handle form submission
   const handleSubmit = () => {
-
     if (!formData.nama_ruangan || !formData.kapasitas || !formData.desc) {
-        // If any required field is empty, display an error message or prevent submission
-        // alert('Semua kolom harus diisi!');
-        Swal.fire({
-          title:'Semua Kolom Harus Diisi',
-          icon:'warning',
-          timer:2000,
-          showConfirmButton:false
-        })
-        return;
-      }
+      Swal.fire({
+        title: 'Semua Kolom Harus Diisi',
+        icon: 'warning',
+        timer: 2000,
+        showConfirmButton: false,
+      });
+      return;
+    }
 
     // Example API call (replace with your actual API endpoint)
-    axios.post(`${API_URL}/ruangan`, formData)
+    axios
+      .post(`${API_URL}/ruangan`, formData)
       .then((response) => {
-        // console.log('Data submitted successfully', response.data);
         Swal.fire({
-          title:'Data Ruangan Berhasil Ditambahkan',
-          icon:'success',
-          timer:1000,
-          showConfirmButton:false
-        })
+          title: 'Data Ruangan Berhasil Ditambahkan',
+          icon: 'success',
+          timer: 1000,
+          showConfirmButton: false,
+        });
         handleClose(); // Close the modal
       })
       .catch((error) => {
-        // console.error('Error submitting data', error);
         Swal.fire({
-          title:'Data Gagal Ditambahkan',
-          icon:'error',
-          timer:1000,
-          showConfirmButton:false
-        })
+          title: 'Data Gagal Ditambahkan',
+          icon: 'error',
+          timer: 1000,
+          showConfirmButton: false,
+        });
       });
+  };
+
+  useEffect(() => {
+    fetchData(); // Load data when the component mounts
+  }, []);
+
+  const fetchData = () => {
+    // Implement your fetchData logic here
   };
 
   return (

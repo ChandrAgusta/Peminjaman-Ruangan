@@ -12,6 +12,9 @@ function DaftarPinjam() {
   const [peminjamanData, setPeminjaman] = useState([]);
 
   useEffect(() => {
+    fetchData(); // Memuat data saat komponen pertama kali dimuat
+  }, []);
+  const fetchData = () => {
     api.getPeminjamanData()
       .then((peminjamanData) => {
         setPeminjaman(peminjamanData);
@@ -19,26 +22,39 @@ function DaftarPinjam() {
       .catch((error) => {
         console.log(error);
       });
-  }, []);
+  };
 
-  const handleTerima = async(idPeminjaman) =>{
+  const handleTerima = async (idPeminjaman, isAccepted) => {
     try {
       const updatedPeminjamanData = {
-        status_peminjaman: 1, 
-        // Tambahkan data lain yang diperlukan jika ada
+        status: isAccepted ? 1 : -1,
       };
+  
       await api.putPeminjamanData(idPeminjaman, updatedPeminjamanData);
-      Swal.fire({
-        icon:'success',
-        title:'Permintaan Peminjaman Berhasil',
-        text:'Permohonan Peminjaman Ruangan Berhasil Dikonfirmasi',
-        timer:1500,
-        showConfirmButton:false,
-      })
+  
+      fetchData();
+      if (isAccepted) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Permintaan Peminjaman Berhasil',
+          text: 'Permohonan Peminjaman Ruangan Berhasil Dikonfirmasi',
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Permintaan Peminjaman Ditolak',
+          text: 'Permohonan Peminjaman Ruangan Ditolak',
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
     } catch (error) {
       console.error('Gagal memperbarui status peminjaman:', error);
     }
   };
+  
 
   return (
     <div className="container">
@@ -60,6 +76,7 @@ function DaftarPinjam() {
                 <th>Jam Keluar</th>
                 <th>Jam Permintaan Masuk</th>
                 <th>Aksi</th>
+                {/* <th>Status</th> */}
               </tr>
             </thead>
             <tbody>
@@ -84,7 +101,8 @@ function DaftarPinjam() {
                     )}
                     {userRole === 'sekretariat' && (
                       <>
-                        <Button className="mx-2 btn-warning" onClick={()=> handleTerima(ruang.id)}>Terima</Button>
+                        <Button className="mx-2 btn-warning" onClick={()=> handleTerima(ruang.id, true)}>Terima</Button>
+                        <Button className="mx-2 btn-danger" onClick={()=> handleTerima(ruang.id, false)}>Tolak</Button>
                       </>
                     )}
                   </td>

@@ -1,6 +1,7 @@
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
+import { Button } from "react-bootstrap";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import React from "react";
 import { useUserRole } from "../userRole";
@@ -9,7 +10,12 @@ const NavbarComp = () => {
   const { userRole } = useUserRole();
   return (
     <div>
-      <Navbar fixed="top" expand="lg" className="navBar fw-semi" variant="light">
+      <Navbar
+        fixed="top"
+        expand="lg"
+        className="navBar fw-semi"
+        variant="light"
+      >
         <Container>
           <Navbar.Brand href="#home">
             <span className="container d-flex align-items-center">
@@ -20,7 +26,10 @@ const NavbarComp = () => {
                 height="50"
                 className="d-inline-block align-top"
               />
-              <span style={{ marginLeft:'2vh' }}>Universitas <br/>Sanata Dharma</span>
+              <span style={{ marginLeft: "2vh" }}>
+                Universitas <br />
+                Sanata Dharma
+              </span>
             </span>
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
@@ -28,14 +37,22 @@ const NavbarComp = () => {
             <Nav className="me-auto">
               <Nav.Link href="/">Home</Nav.Link>
               {/* <Nav.Link href="#link">Ruangan</Nav.Link> */}
-              {userRole === "peminjam" && <Nav.Link href="">Ruangan</Nav.Link>}
+              {userRole === "peminjam" && (
+                <Nav.Link href="/pinjam-ruangan">Ruangan</Nav.Link>
+              )}
               {userRole === "sekretariat" && (
                 <Nav.Link href="/daftar-pinjam">Permintaan Peminjaman</Nav.Link>
               )}
               {userRole === "sekretariat" && (
                 <Nav.Link href="/riwayat-pinjam">Riwayat Peminjaman</Nav.Link>
               )}
-
+            </Nav>
+            <Nav>
+              <Nav.Item>
+                <Nav.Link href="/login">
+                  <Button className="btn-danger">Logout</Button>
+                </Nav.Link>
+              </Nav.Item>
             </Nav>
           </Navbar.Collapse>
         </Container>
