@@ -71,7 +71,7 @@ function ListPage() {
   return (
     <div className="container">
       {userRole === "sekretariat" && (
-      <Card>
+      <Card className="p-3">
       <h2>Daftar Ruangan</h2>
         <Table responsive className="mt-3">
           <thead>
@@ -121,7 +121,7 @@ function ListPage() {
       )}
        {userRole === "peminjam" && (
         <Routes>
-          <Route exact path="/" component={Dashboard} />
+          <Route exact path="/dashboard" component={Dashboard} />
           <Route path="/pinjam-ruangan" component={PeminjamPage} />
         </Routes>
       )}

@@ -45,7 +45,7 @@ function EditForm() {
           timer:1000,
           showConfirmButton:false
         })
-        navigate("/"); 
+        navigate("/dashboard"); 
       })
       .catch((error) => {
         Swal.fire({

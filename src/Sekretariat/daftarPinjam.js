@@ -62,9 +62,9 @@ function DaftarPinjam() {
           <NavbarComp />
       </Container>
       
-      <Container style ={{ marginTop: '15vh' }}>
+      <Container >
+        <Card className='p-3' style ={{ marginTop: '18vh' }}>
         <h2>Daftar Permintaan</h2>
-        <Card>
           <Table responsive className="mt-3">
             <thead>
               <tr>

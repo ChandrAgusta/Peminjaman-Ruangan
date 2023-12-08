@@ -137,7 +137,7 @@ function DashboardAdmin() {
               </thead>
               <tbody>
                 {sekretariat.map((item) => (
-                  <tr key={item.name}>
+                  <tr key={item.id}>
                     <td>{item.id}</td>
                     <td>{item.name}</td>
                     <td>

@@ -28,10 +28,10 @@ function RiwayatPeminjaman() {
         <NavbarComp />
       </Container>
 
-      <Container style={{ marginTop: "15vh" }}>
+      <Container >
+        <Card style={{ marginTop: "18vh" , padding:'4vh'}}>
         <h2>Riwayat Peminjaman</h2>
-        <Card>
-          <Table responsive className="mt-3">
+          <Table responsive className="mt-3" style={{ border:'1px solid black' }}>
             <thead>
               <tr>
                 <th>No</th>
@@ -42,10 +42,10 @@ function RiwayatPeminjaman() {
                 <th>Waktu Konfirmasi</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody style={{ border:'1px solid black' }}>
               {riwayatPeminjaman && riwayatPeminjaman.length > 0 ? (
                 riwayatPeminjaman.map((riwayat, index) => (
-                  <tr
+                  <tr 
                     key={riwayat.id}
                   >
                     <td style={{

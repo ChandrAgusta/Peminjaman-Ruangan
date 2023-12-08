@@ -69,7 +69,7 @@ function Example() {
 
   return (
     <>
-      <Button variant="primary" onClick={handleShow}>
+      <Button variant="primary" onClick={handleShow} style ={{ marginTop:'2vh' }}>  
         Tambah Ruangan
       </Button>
 

@@ -6,11 +6,29 @@ import * as api from "../utils/constants";
 import Swal from "sweetalert2";
 
 const FormPinjam = () => {
+    const [userId, setUserId] = useState('');
+    const [userName, setUserName] = useState('');
+    const [userNim, setUserNim] = useState('');
+  const [dataPeminjam] = useState([])
   const [selectedDate, setSelectedDate] = useState("");
   const [ruanganTersedia, setRuanganTersedia] = useState([]);
   const [checkedJams, setCheckedJams] = useState({});
   const [jamMulai, setJamMulai] = useState({});
   const [jamSelesai, setJamSelesai] = useState({});
+
+  useEffect(() => {
+    api.getUserProfile2()
+      .then((dataPeminjam) => {
+        const { id, name, nim } = dataPeminjam.user;
+        setUserId(id);
+        setUserName(name);
+        setUserNim(nim);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
+  
 
   const handleDateChange = (event) => {
     setSelectedDate(event.target.value);
@@ -91,12 +109,13 @@ const FormPinjam = () => {
       });
     }
 
+    console.log(dataPeminjam);
     console.log("ID Ruangan yang terkirim:", idRuanganTerpilih); // Log ID ruangan yang terkirim
     console.log("Jam Mulai:", jamMulaiArr[0]); // Log jam mulai
     console.log("Jam Selesai:", jamMulaiArr[jamMulaiArr.length - 1]); // Log jam selesai
 
     const peminjamanData = {
-      id_peminjam: "3",
+      // id_peminjam: userId,
       tanggal: selectedDate,
       idRuangan: idRuanganTerpilih[0],
       jam_peminjaman: jamMulaiArr[0],
@@ -106,7 +125,6 @@ const FormPinjam = () => {
 
     try {
       // Kirim data peminjaman ke backend
-
       await api.postPeminjamanData(idRuanganTerpilih[0], peminjamanData);
       Swal.fire({
         title: "Berhasil Mengajukan Peminjaman",
@@ -126,6 +144,8 @@ const FormPinjam = () => {
     }
   };
 
+  // console.log(dataPeminjam.user.name);
+
   return (
     <div>
       <form>
@@ -144,7 +164,7 @@ const FormPinjam = () => {
                 <label>Nama </label>
                 </Col>
                 <Col>
-                <input type ="text">
+                <input type ="text" value={userName} disabled>
                 </input>
                 </Col>
               </Row>
@@ -153,7 +173,7 @@ const FormPinjam = () => {
                 <label>NIM </label>
                 </Col>
                 <Col>
-                <input type ="text">
+                <input type ="text" value={userNim} disabled>
                 </input>
                 </Col>
               </Row>
@@ -198,23 +218,29 @@ const FormPinjam = () => {
 
                         {ruanganTersedia.map((ruanganData) => (
                           <td
+                            key={ruanganData.id}
+                          >
+                            <label for={`checkbox-${ruanganData.id}-${jam.jam}`}
                             style={{
-                              // border: "2px solid black",
+                              display:"flex", 
+                              height: '10vh',
                               backgroundColor:
                                 ruanganData.jam.find(
                                   (item) => item.jam === jam.jam
                                 ).status_ruangan === "0"
                                   ? "green"
                                   : "red",
-                                  borderRadius: '30px',
                             }}
-                            key={ruanganData.id}
-                          >
+                            >
                             <input
                               type="checkbox"
+                              // style={{ display:'none' }}
+                              id={`checkbox-${ruanganData.id}-${jam.jam}`}
                               checked={checkedJams[ruanganData.id]?.[jam.jam]}
                               onChange={() =>
+                                {
                                 handleCheckboxChange(ruanganData.id, jam.jam)
+                              }
                               }
                               disabled={
                                 ruanganData.jam.find(
@@ -222,6 +248,7 @@ const FormPinjam = () => {
                                 ).status_ruangan !== "0"
                               } // Checkbox akan dinonaktifkan jika status bukan 0
                             />
+                            </label>
                           </td>
                         ))}
                       </tr>

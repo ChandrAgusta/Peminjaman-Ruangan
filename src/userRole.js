@@ -1,19 +1,21 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState } from "react";
 
-const UserRole = createContext();
+const storedUserData = localStorage.getItem("user");
+const user = JSON.parse(storedUserData);
+const initialUserRole = user ? user.role : 'defaultRole'; // Set a default role if user data is not available
+
+export const UserRoleContext = createContext();
 
 export function UserRoleProvider({ children }) {
-  const [userRole, setUserRole] = useState('peminjam');
-  // const [userRole, setUserRole] = useState('sekretariat');
-  // const [userRole, setUserRole] = useState('admin');
+  const [userRole, setUserRole] = useState(initialUserRole);
 
   return (
-    <UserRole.Provider value={{ userRole, setUserRole }}>
+    <UserRoleContext.Provider value={{ userRole, setUserRole }}>
       {children}
-    </UserRole.Provider>
+    </UserRoleContext.Provider>
   );
 }
 
 export function useUserRole() {
-  return useContext(UserRole);
+  return useContext(UserRoleContext);
 }

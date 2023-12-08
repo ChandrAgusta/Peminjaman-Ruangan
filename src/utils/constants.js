@@ -213,7 +213,12 @@ export const getPeminjamanData = async () => {
 // Fungsi untuk melakukan POST request data peminjaman
 export const postPeminjamanData = async (id_ruangan, peminjamanData) => {
   try {
-    const response = await axios.post(`${API_URL}/peminjaman/${id_ruangan}`, peminjamanData);
+    const token = localStorage.getItem('token'); // Ambil token dari localStorage
+    const response = await axios.post(`${API_URL}/peminjaman/${id_ruangan}`, peminjamanData,{
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
     return response.data;
   } catch (error) {
     throw error;
@@ -223,7 +228,12 @@ export const postPeminjamanData = async (id_ruangan, peminjamanData) => {
 // Fungsi untuk melakukan PUT request data peminjaman
 export const putPeminjamanData = async (id, peminjamanData) => {
   try {
-    const response = await axios.put(`${API_URL}/peminjaman/${id}`, peminjamanData);
+    const token = localStorage.getItem('token'); // Ambil token dari localStorage
+    const response = await axios.put(`${API_URL}/peminjaman/${id}`, peminjamanData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     throw error;
@@ -289,31 +299,29 @@ export const getUserProfile = async () => {
   }
 };
 
-// export const loginUser = async (credentials) => {
-//   try {
-//     // Use your login API endpoint to authenticate
-//     // and get the token
-//     const response = await fetch(`${API_URL}/login`, {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify(credentials),
-//     });
+export const getUserProfile2 = async () => {
+  try {
+    const token = localStorage.getItem('token'); // Ambil token dari localStorage
+    const response = await axios.get(`${API_URL}/auth/profile`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data; // Ambil userRole dari profil pengguna
+  } catch (error) {
+    throw error;
+  }
+};
 
-//     const data = await response.json();
-//     return data;
-//   } catch (error) {
-//     throw error;
-//   }
-// };
+export const logout = async () => {
+  try {
+    const response = await axios.post(`${API_URL}/auth/logout`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
 
-
-// export const listenToDatabaseChanges = (callback) => {
-//   socket.on('databaseUpdate', (updatedData) => {
-//     callback(updatedData);
-//   });
-// };
 
 
 
