@@ -70,7 +70,7 @@ function DaftarPinjam() {
               <tr>
                 <th>No</th>
                 <th>Id Ruangan</th>
-                {/* <th>Nama Ruangan</th> */}
+                <th>Id Peminjam</th>
                 <th>Tanggal Peminjaman</th>
                 <th>Jam Masuk</th>
                 <th>Jam Keluar</th>
@@ -84,6 +84,7 @@ function DaftarPinjam() {
                 <tr key={ruang.id}>
                   <td>{index + 1}</td>
                   <td>{ruang.id_ruangan}</td>
+                  <td>{ruang.id_peminjam}</td>
                   <td>{ruang.tanggal}</td>
                   <td>{ruang.jam_peminjaman}</td>
                   <td>{ruang.jam_selesai_peminjaman}</td>

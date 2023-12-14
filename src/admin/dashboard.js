@@ -118,7 +118,7 @@ function DashboardAdmin() {
   return (
     <div>
       <Layout />
-      <Container style={{ marginTop: "15vh" }}>
+      <Container style={{ marginTop: "18vh" }}>
         <Card>
           <CardHeader>
             <h3>Kelola Akun Sekretariat</h3>

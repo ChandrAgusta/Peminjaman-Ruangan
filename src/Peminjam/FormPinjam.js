@@ -6,10 +6,10 @@ import * as api from "../utils/constants";
 import Swal from "sweetalert2";
 
 const FormPinjam = () => {
-    const [userId, setUserId] = useState('');
-    const [userName, setUserName] = useState('');
-    const [userNim, setUserNim] = useState('');
-  const [dataPeminjam] = useState([])
+  const [userId, setUserId] = useState("");
+  const [userName, setUserName] = useState("");
+  const [userNim, setUserNim] = useState("");
+  const [dataPeminjam] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
   const [ruanganTersedia, setRuanganTersedia] = useState([]);
   const [checkedJams, setCheckedJams] = useState({});
@@ -17,7 +17,8 @@ const FormPinjam = () => {
   const [jamSelesai, setJamSelesai] = useState({});
 
   useEffect(() => {
-    api.getUserProfile2()
+    api
+      .getUserProfile2()
       .then((dataPeminjam) => {
         const { id, name, nim } = dataPeminjam.user;
         setUserId(id);
@@ -28,7 +29,6 @@ const FormPinjam = () => {
         console.log(error);
       });
   }, []);
-  
 
   const handleDateChange = (event) => {
     setSelectedDate(event.target.value);
@@ -64,6 +64,32 @@ const FormPinjam = () => {
     }
   }, [selectedDate]);
 
+  const handleCheckboxRange = (start, end, ruanganId) => {
+    const updatedCheckedJams = { ...checkedJams };
+
+    const startIndex = ruanganTersedia.findIndex(
+      (ruanganData) => ruanganData.id === ruanganId
+    );
+    const jamMulaiIndex = ruanganTersedia[startIndex].jam.findIndex(
+      (jam) => jam.jam === start
+    );
+    const jamSelesaiIndex = ruanganTersedia[startIndex].jam.findIndex(
+      (jam) => jam.jam === end
+    );
+
+    // Pastikan indeks ditemukan sebelum melakukan perubahan
+    if (startIndex !== -1 && jamMulaiIndex !== -1 && jamSelesaiIndex !== -1) {
+      for (let i = jamMulaiIndex + 1; i < jamSelesaiIndex; i++) {
+        updatedCheckedJams[ruanganId] = {
+          ...updatedCheckedJams[ruanganId],
+          [ruanganTersedia[startIndex].jam[i].jam]: true,
+        };
+      }
+    }
+
+    setCheckedJams(updatedCheckedJams);
+  };
+
   const handleCheckboxChange = (ruanganId, jam) => {
     if (!checkedJams[ruanganId]?.[jam]) {
       setJamMulai({
@@ -81,6 +107,29 @@ const FormPinjam = () => {
           [jam]: jam,
         },
       });
+
+      if (!checkedJams[ruanganId]?.[jam]) {
+        const isChecked = checkedJams[ruanganId]?.[jam];
+        const ruanganData = ruanganTersedia.find(
+          (ruangan) => ruangan.id === ruanganId
+        );
+
+        if (isChecked) {
+          // Jika checkbox dicentang, atur jamSelesai dan panggil handleCheckboxRange
+          const jamMulai = Object.keys(checkedJams[ruanganId]).find(
+            (key) => checkedJams[ruanganId][key]
+          );
+          handleCheckboxRange(jamMulai, jam, ruanganId);
+        } else {
+          // Jika checkbox tidak dicentang, atur jamMulai
+          setCheckedJams({
+            ...checkedJams,
+            [ruanganId]: {
+              [jam]: true,
+            },
+          });
+        }
+      }
     }
 
     setCheckedJams({
@@ -113,6 +162,20 @@ const FormPinjam = () => {
     console.log("ID Ruangan yang terkirim:", idRuanganTerpilih); // Log ID ruangan yang terkirim
     console.log("Jam Mulai:", jamMulaiArr[0]); // Log jam mulai
     console.log("Jam Selesai:", jamMulaiArr[jamMulaiArr.length - 1]); // Log jam selesai
+
+    const cek = idRuanganTerpilih.every(function (element) {
+      return element === idRuanganTerpilih[0];
+    });
+    if (!cek) {
+      Swal.fire({
+        title: "Gagal Mengajukan Peminjaman",
+        text: "Pilih Jam Pada Satu Ruangan",
+        icon: "error",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+      return;
+    }
 
     const peminjamanData = {
       // id_peminjam: userId,
@@ -161,20 +224,18 @@ const FormPinjam = () => {
             <Col className="p-3">
               <Row className="mb-4">
                 <Col>
-                <label>Nama </label>
+                  <label>Nama </label>
                 </Col>
                 <Col>
-                <input type ="text" value={userName} disabled>
-                </input>
+                  <input type="text" value={userName} disabled></input>
                 </Col>
               </Row>
               <Row className="mb-4">
                 <Col>
-                <label>NIM </label>
+                  <label>NIM </label>
                 </Col>
                 <Col>
-                <input type ="text" value={userNim} disabled>
-                </input>
+                  <input type="text" value={userNim} disabled></input>
                 </Col>
               </Row>
               <Row className="mb-4">
@@ -194,14 +255,71 @@ const FormPinjam = () => {
             {ruanganTersedia.length > 0 && (
               <Container className="mt-4">
                 <h4>Ruangan Yang Tersedia pada Tanggal {selectedDate}:</h4>
-                <label style={{ backgroundColor:'green' }}> </label>
+                <h7>
+                  Pilih Jam Mulai dan Jam Selesai dengan mengklik Kolom Jam Pada
+                  Kolom Ruangan Sampai Berubah Warna
+                </h7>
+                <br />
+                <label style={{ fontWeight:'bold' , marginTop:'2vh'}}>Keterangan :</label>
+                
+                <div                  
+                style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginTop: "5px",
+                  }}>
+                  <div
+                    style={{
+                      width: "20px",
+                      height: "20px",
+                      marginRight: "5px",
+                      backgroundColor: "#ccffcc",
+                      border: "1px solid black",
+                    }}
+                  ></div>
+                  <span>Ruangan Tersedia</span>
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginTop: "5px",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "20px",
+                      height: "20px",
+                      marginRight: "5px",
+                      backgroundColor: "red",
+                      border: "1px solid black",
+                    }}
+                  ></div>
+                  <span>Ruangan Sudah Dipinjam</span>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", marginTop:"5px" }}>
+                  <div
+                    style={{
+                      width: "20px",
+                      height: "20px",
+                      marginRight: "5px",
+                      backgroundColor: "green",
+                      border: "1px solid black",
+                    }}
+                  ></div>
+                  <span>Berhasil Memilih Jam Peminjaman</span>
+                </div>
+
+                <label style={{ backgroundColor: "green" }}> </label>
                 <table className="table" style={{ border: "2px solid black" }}>
                   <thead style={{ border: "2px solid black" }}>
                     <tr>
                       <th></th>
                       {ruanganTersedia.map((ruanganData) => (
                         <th
-                          style={{ border: "2px solid black"}}
+                          style={{ border: "2px solid black" }}
                           key={ruanganData.id}
                         >
                           {ruanganData.nama_ruangan}
@@ -212,42 +330,44 @@ const FormPinjam = () => {
                   <tbody>
                     {ruanganTersedia[0].jam.map((jam, index) => (
                       <tr key={index}>
-                        <td style={{ border: "2px solid black", width: "20%" }}>
-                          {jam.jam} 
+                        <td style={{ border: "2px solid black", width: "10%" }}>
+                          {jam.jam}
                         </td>
 
                         {ruanganTersedia.map((ruanganData) => (
                           <td
+                            style={{ border: "2px solid black" }}
                             key={ruanganData.id}
                           >
-                            <label for={`checkbox-${ruanganData.id}-${jam.jam}`}
-                            style={{
-                              display:"flex", 
-                              height: '10vh',
-                              backgroundColor:
-                                ruanganData.jam.find(
-                                  (item) => item.jam === jam.jam
-                                ).status_ruangan === "0"
-                                  ? "green"
-                                  : "red",
-                            }}
+                            <label
+                              htmlFor={`checkbox-${ruanganData.id}-${jam.jam}`}
+                              style={{
+                                display: "flex",
+                                height: "8vh",
+                                backgroundColor:
+                                  ruanganData.jam.find(
+                                    (item) => item.jam === jam.jam
+                                  ).status_ruangan === "0"
+                                    ? checkedJams[ruanganData.id]?.[jam.jam]
+                                      ? "green"
+                                      : "#ccffcc"
+                                    : "red",
+                              }}
                             >
-                            <input
-                              type="checkbox"
-                              // style={{ display:'none' }}
-                              id={`checkbox-${ruanganData.id}-${jam.jam}`}
-                              checked={checkedJams[ruanganData.id]?.[jam.jam]}
-                              onChange={() =>
-                                {
-                                handleCheckboxChange(ruanganData.id, jam.jam)
-                              }
-                              }
-                              disabled={
-                                ruanganData.jam.find(
-                                  (item) => item.jam === jam.jam
-                                ).status_ruangan !== "0"
-                              } // Checkbox akan dinonaktifkan jika status bukan 0
-                            />
+                              <input
+                                type="checkbox"
+                                style={{ display: "none" }}
+                                id={`checkbox-${ruanganData.id}-${jam.jam}`}
+                                checked={checkedJams[ruanganData.id]?.[jam.jam]}
+                                onChange={() => {
+                                  handleCheckboxChange(ruanganData.id, jam.jam);
+                                }}
+                                disabled={
+                                  ruanganData.jam.find(
+                                    (item) => item.jam === jam.jam
+                                  ).status_ruangan !== "0"
+                                } // Checkbox akan dinonaktifkan jika status bukan 0
+                              />
                             </label>
                           </td>
                         ))}

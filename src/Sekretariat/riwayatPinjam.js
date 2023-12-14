@@ -36,6 +36,7 @@ function RiwayatPeminjaman() {
               <tr>
                 <th>No</th>
                 <th>Nama Ruangan</th>
+                <th>Id Peminjam</th>
                 <th>Tanggal Peminjaman</th>
                 <th>Jam Masuk</th>
                 <th>Jam Keluar</th>
@@ -64,6 +65,14 @@ function RiwayatPeminjaman() {
                           ? "red"
                           : "transparent",
                     }}>{riwayat.id_ruangan}</td>
+                    <td style={{
+                      background:
+                        riwayat.status_peminjaman === '1'
+                          ? "lightgreen"
+                          : riwayat.status_peminjaman === '-1'
+                          ? "red"
+                          : "transparent",
+                    }}>{riwayat.id_peminjam}</td>
                     <td style={{
                       background:
                         riwayat.status_peminjaman === '1'
